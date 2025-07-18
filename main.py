@@ -25,6 +25,9 @@ defaultMessageInterval: int = 3
 # Variables
 stop = False
 heartRate: int = 0
+maxHeartRate = 0
+minHeartRate = 0
+
 
 def write_hr(hr="0"):
     file = open('./hr.txt', 'w+')
@@ -107,6 +110,28 @@ def serverRun():
 
 
 
+def updateMaxHeartRate():
+    global maxHeartRate
+    print("Updating max heart rate...")
+    Label_MaxHeartRate.configure(text="Max HR: {}".format(maxHeartRate))
+    if heartRate > maxHeartRate:
+        maxHeartRate = heartRate
+        Label_MaxHeartRate.configure(text="Max HR: {}".format(maxHeartRate))
+
+def updateMinHeartRate():
+    global minHeartRate
+    print("Updating min heart rate...")
+    Label_MinHeartRate.configure(text="Min HR: {}".format(minHeartRate))
+    if heartRate < minHeartRate:
+        minHeartRate = heartRate
+        Label_MinHeartRate.configure(text="Min HR: {}".format(minHeartRate))
+
+def set_initial_min_max():
+    global minHeartRate, maxHeartRate
+    time.sleep(5)
+    minHeartRate = heartRate
+    maxHeartRate = heartRate
+
 
 
 
@@ -120,9 +145,12 @@ def read_and_send_text(file_path):
             for line in lines:
                 message = line.strip()
                 if message:
+                    global heartRate
                     # Set Heart Rate Variable
                     heartRate = int(message)
                     Label_HeartRate.configure(text=(heartRate))
+                    updateMaxHeartRate()
+                    updateMinHeartRate()
                     # Send message to VRChat chat box
                     if message == "69":
                         client.send_message("/chatbox/input", ["♥ " + message + " Nice!", True])
@@ -135,6 +163,7 @@ def read_and_send_text(file_path):
                     else:
                         client.send_message("/chatbox/input", ["♥ " + message + " BPM", True])  # True = Send immediately
                         print(f"Sent: {message}")
+
     except FileNotFoundError:
         print(f"Error: File '{file_path}' not found.")
     except Exception as e:
@@ -146,21 +175,21 @@ def increase_clicked_one(): # +1
     if messageInterval >= 1:
         messageInterval += 1
         print("Message Interval", messageInterval)
-        Label_Interval.configure(text=str(messageInterval))
+        Label_Interval.configure(text=str("Interval: {} Seconds".format(messageInterval)))
 
 def increase_clicked_five(): # +5
     global messageInterval
     if messageInterval >= 1:
         messageInterval += 5
         print("Message Interval", messageInterval)
-        Label_Interval.configure(text=str(messageInterval))
+        Label_Interval.configure(text=str("Interval: {} Seconds".format(messageInterval)))
 
 def increase_clicked_ten(): # +10
     global messageInterval
     if messageInterval >= 1:
         messageInterval += 10
         print("Message Interval", messageInterval)
-        Label_Interval.configure(text=str(messageInterval))
+        Label_Interval.configure(text=str("Interval: {} Seconds".format(messageInterval)))
 
 # Functions to decrease the message interval on button press
 def decrease_clicked_one(): # -1
@@ -168,20 +197,20 @@ def decrease_clicked_one(): # -1
     if messageInterval > 1:
         messageInterval -= 1
         print("Message Interval", messageInterval)
-        Label_Interval.configure(text=str(messageInterval))
+        Label_Interval.configure(text=str("Interval: {} Seconds".format(messageInterval)))
 
 def decrease_clicked_five(): # -5
     global messageInterval
     if messageInterval > 1:
         messageInterval -= 5
         print("Message Interval", messageInterval)
-        Label_Interval.configure(text=str(messageInterval))
+        Label_Interval.configure(text=str("Interval: {} Seconds".format(messageInterval)))
 def decrease_clicked_ten(): # -10
     global messageInterval
     if messageInterval > 1:
         messageInterval -= 10
         print("Message Interval", messageInterval)
-        Label_Interval.configure(text=str(messageInterval))
+        Label_Interval.configure(text=str("Interval: {} Seconds".format(messageInterval)))
 
 # Functions to start and stop the program
 def stop_program():
@@ -202,8 +231,11 @@ def start_program():
     t.start()
     t2 = threading.Thread(target=serverRun)
     t2.start()
+    t3 = threading.Thread(target=set_initial_min_max)
+    t3.start()
 
 def restore_default():
+    global messageInterval
     stop_program()
     messageInterval = defaultMessageInterval
     Label_Interval.configure(text=str(messageInterval))
@@ -233,7 +265,7 @@ Label_Main.place(x=280, y=0)
 
 Label_HeartRate = customtkinter.CTkLabel( # Heart Rate Label
     master=window,
-    text="HR: 65",
+    text="HR: 999",
     font=("Courier New", 20),
     text_color="#000000",
     height=30,
@@ -243,6 +275,33 @@ Label_HeartRate = customtkinter.CTkLabel( # Heart Rate Label
     fg_color="#ffffff",
     )
 Label_HeartRate.place(x=340, y=40)
+
+Label_MaxHeartRate = customtkinter.CTkLabel( # Maximum Heart Rate Label
+    master=window,
+    text="Max HR: 999",
+    font=("Courier New", 20),
+    text_color="#000000",
+    height=30,
+    width=100,
+    corner_radius=20,
+    bg_color="#919191",
+    fg_color="#ffffff",
+    )
+Label_MaxHeartRate.place(x=460, y=40)
+
+Label_MinHeartRate = customtkinter.CTkLabel( # Minimum Heart Rate Label
+    master=window,
+    text="Min HR: 999",
+    font=("Courier New", 20),
+    text_color="#000000",
+    height=30,
+    width=100,
+    corner_radius=20,
+    bg_color="#919191",
+    fg_color="#ffffff",
+    )
+Label_MinHeartRate.place(x=170, y=40)
+
 
 Label_Interval = customtkinter.CTkLabel( # Interval Label
     master=window,
